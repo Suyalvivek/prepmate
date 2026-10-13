@@ -1,0 +1,637 @@
+// PrepMate — Prisma Schema
+// Phase 0+1: Foundation + Auth + Profile
+// Subsequent phases add more models via migrations
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Enums ────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  candidate
+  admin
+}
+
+enum TaskStatus {
+  planned
+  in_progress
+  completed
+  skipped
+  cancelled
+  deferred
+}
+
+enum TaskType {
+  learn
+  practice
+  revision
+  mock_test
+  mock_analysis
+  admin
+  custom
+}
+
+enum Priority {
+  low
+  medium
+  high
+  critical
+}
+
+enum WeeklyPlanStatus {
+  draft
+  active
+  completed
+  archived
+}
+
+enum LearningStatus {
+  not_started
+  learning
+  practising
+  completed
+}
+
+enum Mastery {
+  unknown
+  weak
+  developing
+  strong
+}
+
+enum VerificationStatus {
+  verified
+  needs_review
+  sample
+}
+
+enum RelevanceType {
+  common_core
+  related
+  exam_specific
+  unverified
+}
+
+enum ScheduleStrategy {
+  balance
+  next_day
+  prioritise_high
+  manual
+}
+
+enum ProposalStatus {
+  pending
+  accepted
+  rejected
+  expired
+}
+
+enum RestDayType {
+  full
+  light
+  exceptional
+}
+
+enum SessionStatus {
+  active
+  paused
+  completed
+  abandoned
+}
+
+enum RevisionRating {
+  again
+  difficult
+  good
+  easy
+}
+
+enum RevisionItemStatus {
+  active
+  completed
+  archived
+}
+
+enum MistakeCategory {
+  concept_gap
+  careless_error
+  calculation_error
+  time_management
+  misread_question
+  guess
+  forgotten_fact
+  other
+}
+
+// ── Identity & Preferences ────────────────────────────────────────────────────
+
+model User {
+  id                   String   @id @default(uuid())
+  firebaseUid          String   @unique
+  email                String
+  displayName          String?
+  avatarUrl            String?
+  timezone             String   @default("Asia/Kolkata")
+  role                 UserRole @default(candidate)
+  onboardingCompleted  Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  deletedAt            DateTime?
+
+  // Relations
+  preferences        UserPreference?
+  selectedExams      UserExam[]
+  weeklyPlans        WeeklyPlan[]
+  studyTasks         StudyTask[]
+  topicProgress      TopicProgress[]
+  studySessions      StudySession[]
+  mockTests          MockTest[]
+  mistakes           Mistake[]
+  revisionItems      RevisionItem[]
+  journalEntries     JournalEntry[]
+  xpEvents           XPEvent[]
+  userAchievements   UserAchievement[]
+  restDays           RestDay[]
+  scheduleProposals  ScheduleProposal[]
+  scheduleRevisions  ScheduleRevision[]
+  aiRequestLogs      AIRequestLog[]
+
+  @@index([firebaseUid])
+  @@map("users")
+}
+
+model UserPreference {
+  id                    String   @id @default(uuid())
+  userId                String   @unique
+  theme                 String   @default("system")
+  dailyStudyMinutes     Int      @default(120)
+  weeklyStudyMinutes    Int      @default(600)
+  preferredStudyDays    String   @default("[1,2,3,4,5]") // JSON array of day numbers 0=Sun
+  monthlyRestDayAllowance Int    @default(3)
+  notificationSettings  Json     @default("{\"enabled\":true,\"quietHoursStart\":null,\"quietHoursEnd\":null}")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+// ── Shared Reference Data (not deleted when user deletes account) ─────────────
+
+model Exam {
+  id           String   @id @default(uuid())
+  code         String   @unique
+  name         String
+  organisation String
+  description  String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  stages      ExamStage[]
+  userExams   UserExam[]
+  mockTests   MockTest[]
+
+  @@map("exams")
+}
+
+model ExamStage {
+  id       String  @id @default(uuid())
+  examId   String
+  code     String
+  name     String
+  sortOrder Int    @default(0)
+  sourceId String?
+
+  exam              Exam               @relation(fields: [examId], references: [id])
+  examTopicMappings ExamTopicMapping[]
+  mockTests         MockTest[]
+
+  @@unique([examId, code])
+  @@map("exam_stages")
+}
+
+model Subject {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+
+  topics      Topic[]
+
+  @@map("subjects")
+}
+
+model Topic {
+  id            String  @id @default(uuid())
+  subjectId     String
+  parentTopicId String?
+  slug          String  @unique
+  name          String
+  description   String?
+  sortOrder     Int     @default(0)
+
+  subject       Subject           @relation(fields: [subjectId], references: [id])
+  parent        Topic?            @relation("TopicHierarchy", fields: [parentTopicId], references: [id])
+  children      Topic[]           @relation("TopicHierarchy")
+  examMappings  ExamTopicMapping[]
+  userProgress  TopicProgress[]
+  studySessions StudySession[]
+  studyTasks    StudyTask[]
+  revisionItems RevisionItem[]
+  mistakes      Mistake[]
+
+  @@index([subjectId])
+  @@map("topics")
+}
+
+model ExamTopicMapping {
+  id                 String             @id @default(uuid())
+  examStageId        String
+  topicId            String
+  relevanceType      RelevanceType      @default(unverified)
+  depthNote          String?
+  verificationStatus VerificationStatus @default(sample)
+  sourceId           String?
+  verifiedAt         DateTime?
+  createdAt          DateTime           @default(now())
+
+  examStage     ExamStage      @relation(fields: [examStageId], references: [id])
+  topic         Topic          @relation(fields: [topicId], references: [id])
+  contentSource ContentSource? @relation(fields: [sourceId], references: [id])
+
+  @@unique([examStageId, topicId])
+  @@map("exam_topic_mappings")
+}
+
+model ContentSource {
+  id          String    @id @default(uuid())
+  title       String
+  url         String?
+  publisher   String?
+  publishedAt DateTime?
+  accessedAt  DateTime  @default(now())
+  notes       String?
+
+  mappings ExamTopicMapping[]
+
+  @@map("content_sources")
+}
+
+// ── User Selections & Progress ────────────────────────────────────────────────
+
+model UserExam {
+  id         String    @id @default(uuid())
+  userId     String
+  examId     String
+  targetDate DateTime?
+  isPrimary  Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exam Exam @relation(fields: [examId], references: [id])
+
+  @@unique([userId, examId])
+  @@index([userId])
+  @@map("user_exams")
+}
+
+model TopicProgress {
+  id              String         @id @default(uuid())
+  userId          String
+  topicId         String
+  learningStatus  LearningStatus @default(not_started)
+  mastery         Mastery        @default(unknown)
+  lastPractisedAt DateTime?
+  nextRevisionAt  DateTime?
+  notes           String?
+  updatedAt       DateTime       @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic Topic @relation(fields: [topicId], references: [id])
+
+  @@unique([userId, topicId])
+  @@index([userId])
+  @@map("topic_progress")
+}
+
+// ── Planning ──────────────────────────────────────────────────────────────────
+
+model WeeklyPlan {
+  id            String           @id @default(uuid())
+  userId        String
+  weekStartDate DateTime         @db.Date // Monday in user's timezone
+  status        WeeklyPlanStatus @default(active)
+  targetMinutes Int              @default(600)
+  version       Int              @default(1)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks             StudyTask[]
+  scheduleProposals ScheduleProposal[]
+
+  @@unique([userId, weekStartDate])
+  @@index([userId])
+  @@map("weekly_plans")
+}
+
+model StudyTask {
+  id               String     @id @default(uuid())
+  userId           String
+  weeklyPlanId     String?
+  title            String
+  description      String?
+  taskType         TaskType   @default(learn)
+  status           TaskStatus @default(planned)
+  priority         Priority   @default(medium)
+  estimatedMinutes Int        @default(30)
+  scheduledDate    DateTime?  @db.Date // local date in user's timezone
+  dueDate          DateTime?  @db.Date
+  subjectId        String?
+  topicId          String?
+  completedAt      DateTime?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  archivedAt       DateTime?
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weeklyPlan WeeklyPlan? @relation(fields: [weeklyPlanId], references: [id])
+  topic      Topic?      @relation(fields: [topicId], references: [id])
+
+  @@index([userId, scheduledDate, status])
+  @@index([userId, dueDate])
+  @@map("study_tasks")
+}
+
+model ScheduleProposal {
+  id               String           @id @default(uuid())
+  userId           String
+  weeklyPlanId     String?
+  basePlanVersion  Int
+  algorithmVersion String           @default("1.0.0")
+  strategy         ScheduleStrategy @default(balance)
+  status           ProposalStatus   @default(pending)
+  proposalPayload  Json             // Array of TaskMove
+  warnings         Json             @default("[]")
+  createdAt        DateTime         @default(now())
+  acceptedAt       DateTime?
+  rejectedAt       DateTime?
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weeklyPlan WeeklyPlan? @relation(fields: [weeklyPlanId], references: [id])
+  revisions  ScheduleRevision[]
+
+  @@index([userId, status])
+  @@map("schedule_proposals")
+}
+
+model ScheduleRevision {
+  id                String   @id @default(uuid())
+  userId            String
+  proposalId        String?
+  planVersionBefore Int
+  planVersionAfter  Int
+  changeSummary     Json
+  createdAt         DateTime @default(now())
+
+  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  proposal ScheduleProposal? @relation(fields: [proposalId], references: [id])
+
+  @@index([userId])
+  @@map("schedule_revisions")
+}
+
+model RestDay {
+  id        String      @id @default(uuid())
+  userId    String
+  localDate DateTime    @db.Date
+  type      RestDayType @default(full)
+  note      String?
+  createdAt DateTime    @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, localDate])
+  @@index([userId])
+  @@map("rest_days")
+}
+
+// ── Study & Assessment ────────────────────────────────────────────────────────
+
+model StudySession {
+  id              String        @id @default(uuid())
+  userId          String
+  taskId          String?
+  topicId         String?
+  subjectId       String?
+  startedAt       DateTime
+  endedAt         DateTime?
+  durationSeconds Int           @default(0)
+  status          SessionStatus @default(active)
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic Topic? @relation(fields: [topicId], references: [id])
+
+  @@index([userId, startedAt])
+  @@map("study_sessions")
+}
+
+model MockTest {
+  id              String    @id @default(uuid())
+  userId          String
+  examId          String?
+  examStageId     String?
+  title           String
+  testDate        DateTime  @db.Date
+  durationSeconds Int?
+  score           Float?
+  maxScore        Float?
+  correctCount    Int?
+  incorrectCount  Int?
+  unattemptedCount Int?
+  markingScheme   Json?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user         User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exam         Exam?                  @relation(fields: [examId], references: [id])
+  examStage    ExamStage?             @relation(fields: [examStageId], references: [id])
+  topicResults MockTestTopicResult[]
+  mistakes     Mistake[]
+
+  @@index([userId, testDate])
+  @@map("mock_tests")
+}
+
+model MockTestTopicResult {
+  id               String @id @default(uuid())
+  mockTestId       String
+  topicId          String
+  attempted        Int    @default(0)
+  correct          Int    @default(0)
+  incorrect        Int    @default(0)
+  timeSpentSeconds Int?
+
+  mockTest MockTest @relation(fields: [mockTestId], references: [id], onDelete: Cascade)
+
+  @@unique([mockTestId, topicId])
+  @@map("mock_test_topic_results")
+}
+
+model Mistake {
+  id                String          @id @default(uuid())
+  userId            String
+  mockTestId        String?
+  topicId           String?
+  category          MistakeCategory @default(other)
+  questionReference String?
+  userReasoning     String?
+  correctExplanation String?
+  resolutionNotes   String?
+  nextReviewAt      DateTime?
+  resolvedAt        DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mockTest MockTest? @relation(fields: [mockTestId], references: [id])
+  topic    Topic?    @relation(fields: [topicId], references: [id])
+
+  @@index([userId])
+  @@map("mistakes")
+}
+
+model RevisionItem {
+  id              String             @id @default(uuid())
+  userId          String
+  topicId         String?
+  mistakeId       String?
+  title           String
+  content         String?
+  dueAt           DateTime
+  lastReviewedAt  DateTime?
+  intervalDays    Int                @default(1)
+  easeFactor      Float?
+  status          RevisionItemStatus @default(active)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic   Topic?         @relation(fields: [topicId], references: [id])
+  reviews RevisionReview[]
+
+  @@index([userId, dueAt, status])
+  @@map("revision_items")
+}
+
+model RevisionReview {
+  id             String         @id @default(uuid())
+  revisionItemId String
+  userId         String
+  rating         RevisionRating
+  reviewedAt     DateTime       @default(now())
+  nextDueAt      DateTime
+
+  revisionItem RevisionItem @relation(fields: [revisionItemId], references: [id], onDelete: Cascade)
+
+  @@index([revisionItemId])
+  @@map("revision_reviews")
+}
+
+// ── Diary & Gamification ──────────────────────────────────────────────────────
+
+model JournalEntry {
+  id                String   @id @default(uuid())
+  userId            String
+  localDate         DateTime @db.Date
+  wins              String?
+  difficulties      String?
+  distractions      String?
+  lessonsLearned    String?
+  tomorrowIntention String?
+  energyRating      Int?     // optional 1-5
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, localDate])
+  @@index([userId, localDate])
+  @@map("journal_entries")
+}
+
+model XPEvent {
+  id             String   @id @default(uuid())
+  userId         String
+  eventType      String
+  points         Int
+  sourceType     String?
+  sourceId       String?
+  idempotencyKey String   @unique
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("xp_events")
+}
+
+model Achievement {
+  id          String @id @default(uuid())
+  code        String @unique
+  name        String
+  description String
+  criteria    Json
+  isActive    Boolean @default(true)
+
+  userAchievements UserAchievement[]
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String   @id @default(uuid())
+  userId        String
+  achievementId String
+  earnedAt      DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id])
+
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+// ── AI Metadata ───────────────────────────────────────────────────────────────
+
+model AIRequestLog {
+  id               String   @id @default(uuid())
+  userId           String
+  requestType      String
+  provider         String
+  model            String
+  status           String
+  latencyMs        Int?
+  inputTokenCount  Int?
+  outputTokenCount Int?
+  createdAt        DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("ai_request_logs")
+}
+
+// Note: BYOK credentials are NOT stored here.
+// They are stored encrypted in a separate encrypted_credentials table
+// or in a managed secrets service. See UserAIConfiguration if added.

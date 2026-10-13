@@ -1,0 +1,44 @@
+# PrepMate — Git Ignore
+
+# Environment files (NEVER commit real secrets)
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Dependencies
+node_modules/
+.bun/
+
+# Build outputs
+dist/
+build/
+.vite/
+
+# Prisma
+apps/backend/prisma/migrations/*.sql.bak
+
+# TypeScript
+*.tsbuildinfo
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Firebase service account (NEVER commit)
+*serviceAccountKey*.json
+firebase-adminsdk-*.json
+
+# Bun
+bun.lockb

@@ -1,0 +1,37 @@
+{
+  "name": "@prepmate/backend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "bun run --watch src/server.ts",
+    "start": "bun run src/server.ts",
+    "build": "bun build src/server.ts --outdir dist --target bun",
+    "test": "bun test",
+    "lint": "bunx eslint src --ext .ts",
+    "db:generate": "bunx prisma generate",
+    "db:migrate": "bunx prisma migrate deploy",
+    "db:migrate:dev": "bunx prisma migrate dev",
+    "db:seed": "bun run prisma/seed.ts",
+    "db:studio": "bunx prisma studio",
+    "db:reset": "bunx prisma migrate reset"
+  },
+  "dependencies": {
+    "@prepmate/shared-types": "workspace:*",
+    "@prisma/client": "^5.20.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.4.0",
+    "firebase-admin": "^12.6.0",
+    "helmet": "^8.0.0",
+    "pino": "^9.4.0",
+    "pino-pretty": "^11.3.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.7.5",
+    "prisma": "^5.20.0",
+    "typescript": "^5.5.4"
+  }
+}

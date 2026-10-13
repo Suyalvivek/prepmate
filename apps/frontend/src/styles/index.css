@@ -1,0 +1,193 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── PrepMate Design Token System ────────────────────────────────────────────
+   All colour tokens use HSL format so Tailwind can apply opacity modifiers.
+   Never hard-code colours in component files — always use these tokens.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+@layer base {
+  /* Light Theme */
+  :root {
+    /* Page & surface */
+    --background: 220 20% 97%;         /* soft neutral page bg */
+    --foreground: 222 47% 11%;         /* near-black text */
+    --card: 0 0% 100%;                 /* white card surface */
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Sidebar — navy */
+    --sidebar-bg: 218 45% 18%;         /* #1e2d40 navy */
+    --sidebar-fg: 213 31% 91%;         /* muted light text */
+    --sidebar-accent: 221 83% 53%;     /* brighter indigo for active nav */
+    --sidebar-border: 218 38% 25%;
+
+    /* Primary — indigo accent */
+    --primary: 239 84% 67%;            /* indigo-500 #6366f1 */
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary */
+    --secondary: 220 14% 93%;
+    --secondary-foreground: 222 47% 18%;
+
+    /* Muted */
+    --muted: 220 14% 93%;
+    --muted-foreground: 220 9% 46%;
+
+    /* Accent (subtle highlight) */
+    --accent: 239 84% 67%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Semantic */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    /* Form/Border */
+    --border: 220 13% 88%;
+    --input: 220 13% 88%;
+    --ring: 239 84% 67%;
+
+    /* Radius */
+    --radius: 0.625rem;               /* 10px — rounded cards */
+  }
+
+  /* Dark Theme */
+  .dark {
+    /* Page & surface — deep neutrals, NOT pure black */
+    --background: 224 30% 10%;         /* #0f1623 */
+    --foreground: 210 40% 92%;
+    --card: 222 28% 14%;               /* #171e2e */
+    --card-foreground: 210 40% 92%;
+    --popover: 222 28% 14%;
+    --popover-foreground: 210 40% 92%;
+
+    /* Sidebar — slightly darker navy */
+    --sidebar-bg: 220 40% 10%;         /* #0e1720 */
+    --sidebar-fg: 213 31% 80%;
+    --sidebar-accent: 239 84% 72%;
+    --sidebar-border: 220 30% 17%;
+
+    /* Primary */
+    --primary: 239 84% 72%;            /* indigo-400, slightly brighter on dark */
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary */
+    --secondary: 222 28% 19%;
+    --secondary-foreground: 210 40% 90%;
+
+    /* Muted */
+    --muted: 222 28% 19%;
+    --muted-foreground: 215 14% 55%;
+
+    /* Accent */
+    --accent: 239 84% 72%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Semantic */
+    --destructive: 0 63% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 142 60% 42%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 80% 52%;
+    --warning-foreground: 0 0% 100%;
+
+    /* Form/Border */
+    --border: 222 20% 22%;
+    --input: 222 20% 22%;
+    --ring: 239 84% 72%;
+  }
+}
+
+/* ── Base Styles ─────────────────────────────────────────────────────────── */
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  /* Prevent FOUC for theme — applied by ThemeProvider before first paint */
+  html.dark body {
+    color-scheme: dark;
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Focus ring — visible for keyboard users */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  /* Scrollbar — subtle in both themes */
+  ::-webkit-scrollbar {
+    @apply w-1.5 h-1.5;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-border;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/30;
+  }
+}
+
+/* ── Component Utilities ─────────────────────────────────────────────────── */
+
+@layer components {
+  /* PrepMate card — consistent bordered rounded card */
+  .pm-card {
+    @apply rounded-lg border border-border bg-card text-card-foreground shadow-sm;
+  }
+
+  /* Sidebar nav item */
+  .nav-item {
+    @apply flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors
+           text-sidebar-foreground hover:bg-white/10
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-accent;
+  }
+
+  .nav-item.active {
+    @apply bg-white/15 text-white;
+  }
+
+  /* Status chip — icon + label, never colour-only */
+  .status-chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  /* Priority badge */
+  .priority-low {
+    @apply bg-muted text-muted-foreground;
+  }
+  .priority-medium {
+    @apply bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300;
+  }
+  .priority-high {
+    @apply bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300;
+  }
+  .priority-critical {
+    @apply bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300;
+  }
+}

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PrepMate — Adaptive SSC Study Planner</title>
+    <meta name="description" content="PrepMate is your personal study operating system for SSC CGL, CPO, and CHSL — planner, syllabus tracker, analytics, and AI mentor." />
+    <script>
+      // Prevent FOUC: apply theme before first paint
+      try {
+        const theme = localStorage.getItem('prepmate-theme') || 'system'
+        const resolved = theme === 'system'
+          ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          : theme
+        document.documentElement.classList.add(resolved)
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
