@@ -12,6 +12,7 @@
     "dev:frontend": "bun run --cwd apps/frontend dev",
     "dev:backend": "bun run --cwd apps/backend dev",
     "build": "bun run --filter '*' build",
+    "deploy:frontend": "cd apps/frontend && npx wrangler deploy",
     "test": "bun run --filter '*' test",
     "lint": "bun run --filter '*' lint",
     "format": "bunx prettier --write \"**/*.{ts,tsx,json,md,css}\" --ignore-path .gitignore",
