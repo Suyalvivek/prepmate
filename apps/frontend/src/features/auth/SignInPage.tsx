@@ -3,7 +3,7 @@ import { GraduationCap, Chrome } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export function SignInPage() {
-  const { signInWithGoogle, isLoading, error } = useAuth()
+  const { signInWithGoogle, enterDemoMode, isLoading, error } = useAuth()
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -45,7 +45,7 @@ export function SignInPage() {
             onClick={signInWithGoogle}
             disabled={isLoading}
             className={cn(
-              'w-full flex items-center justify-center gap-3 rounded-lg border border-border',
+              'w-full flex items-center justify-center gap-3 rounded-xl border border-border',
               'bg-card px-4 py-3 text-sm font-medium text-foreground',
               'hover:bg-secondary transition-colors',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
@@ -58,6 +58,28 @@ export function SignInPage() {
               <Chrome className="h-4 w-4" />
             )}
             {isLoading ? 'Signing in…' : 'Continue with Google'}
+          </button>
+
+          {/* Divider */}
+          <div className="relative flex items-center justify-center">
+            <div className="border-t border-border w-full" />
+            <span className="bg-card px-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider absolute">
+              or
+            </span>
+          </div>
+
+          {/* Instant Demo Preview Button */}
+          <button
+            onClick={enterDemoMode}
+            type="button"
+            className={cn(
+              'w-full flex items-center justify-center gap-2.5 rounded-xl',
+              'bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 text-sm font-semibold shadow-sm shadow-blue-500/20',
+              'transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'
+            )}
+          >
+            <img src="/assets/aman-avatar.jpg" alt="Aman" className="w-5 h-5 rounded-full object-cover" />
+            <span>Preview Dashboard as Aman</span>
           </button>
 
           <p className="text-center text-xs text-muted-foreground">

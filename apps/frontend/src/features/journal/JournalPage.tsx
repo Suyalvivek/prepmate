@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Clock, Play, Pause, RotateCcw, BookMarked, Smile, Sparkles, CheckCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
+import { useAuth } from '@/app/providers/AuthProvider'
+
 interface JournalEntry {
   id: string
   date: string
@@ -10,7 +12,7 @@ interface JournalEntry {
   blockers: string
 }
 
-const INITIAL_ENTRIES: JournalEntry[] = [
+const DEMO_ENTRIES: JournalEntry[] = [
   {
     id: '1',
     date: '11 Oct 2026',
@@ -28,14 +30,29 @@ const INITIAL_ENTRIES: JournalEntry[] = [
 ]
 
 export function JournalPage() {
+  const { user } = useAuth()
+  const isDemo = user?.email === 'aman@prepmate.app' || user?.uid === 'demo-aman-101'
+
   // Focus Timer state
   const [secondsLeft, setSecondsLeft] = useState(25 * 60)
   const [isRunning, setIsRunning] = useState(false)
   const [timerMode, setTimerMode] = useState<25 | 50 | 10>(25)
-  const [sessionsLogged, setSessionsLogged] = useState(2)
+  const [sessionsLogged, setSessionsLogged] = useState(isDemo ? 2 : 0)
 
   // Journal state
-  const [entries, setEntries] = useState<JournalEntry[]>(INITIAL_ENTRIES)
+  const [entries, setEntries] = useState<JournalEntry[]>(() => {
+    if (isDemo) return DEMO_ENTRIES
+    try {
+      const saved = localStorage.getItem('prepmate_journal_entries')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      }
+    } catch {
+      // ignore
+    }
+    return []
+  })
   const [mood, setMood] = useState('🔥 Productive')
   const [accomplishments, setAccomplishments] = useState('')
   const [blockers, setBlockers] = useState('')
@@ -261,22 +278,28 @@ export function JournalPage() {
       <div className="pm-card p-6">
         <h3 className="text-sm font-bold text-foreground mb-4">Past Reflection Logs</h3>
         <div className="space-y-3">
-          {entries.map((entry) => (
-            <div key={entry.id} className="p-3.5 rounded-lg border border-border bg-background space-y-1.5">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-primary">{entry.date}</span>
-                <span className="px-2 py-0.5 rounded-full bg-muted text-foreground text-[11px] font-medium">
-                  {entry.mood}
-                </span>
-              </div>
-              <p className="text-xs text-foreground font-medium">{entry.accomplishments}</p>
-              {entry.blockers && (
-                <p className="text-[11px] text-muted-foreground italic">
-                  Note: {entry.blockers}
-                </p>
-              )}
+          {entries.length === 0 ? (
+            <div className="py-8 text-center text-xs text-muted-foreground">
+              No reflection logs yet. Take 2 minutes to record your first daily reflection above!
             </div>
-          ))}
+          ) : (
+            entries.map((entry) => (
+              <div key={entry.id} className="p-3.5 rounded-lg border border-border bg-background space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-primary">{entry.date}</span>
+                  <span className="px-2 py-0.5 rounded-full bg-muted text-foreground text-[11px] font-medium">
+                    {entry.mood}
+                  </span>
+                </div>
+                <p className="text-xs text-foreground font-medium">{entry.accomplishments}</p>
+                {entry.blockers && (
+                  <p className="text-[11px] text-muted-foreground italic">
+                    Note: {entry.blockers}
+                  </p>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

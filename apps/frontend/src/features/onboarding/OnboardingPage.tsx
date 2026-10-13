@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/app/providers/AuthProvider'
 import { apiClient } from '@/lib/api-client'
@@ -21,10 +21,16 @@ interface OnboardingData {
 
 export function OnboardingPage() {
   const navigate = useNavigate()
-  const { signOutUser, setOnboardingCompleted } = useAuth()
+  const { signOutUser, setOnboardingCompleted, onboardingCompleted } = useAuth()
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (onboardingCompleted) {
+      navigate('/app', { replace: true })
+    }
+  }, [onboardingCompleted, navigate])
 
   const [data, setData] = useState<OnboardingData>({
     selectedExamCodes: [],
@@ -72,7 +78,10 @@ export function OnboardingPage() {
       setOnboardingCompleted(true)
       navigate('/app', { replace: true })
     } catch (err) {
-      setError('Failed to save preferences. Please try again.')
+      console.error('Onboarding save error:', err)
+      const message =
+        err instanceof Error ? err.message : 'Failed to save preferences. Please try again.'
+      setError(message)
       setIsSubmitting(false)
     }
   }

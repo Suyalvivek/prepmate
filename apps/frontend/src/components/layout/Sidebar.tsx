@@ -10,11 +10,11 @@ import {
   BarChart2,
   FileText,
   Sparkles,
-  TrendingUp,
-  CalendarDays,
-  Award,
+  Trophy,
+  RefreshCw,
   Settings,
   ChevronLeft,
+  ChevronRight,
   ChevronDown,
   GraduationCap,
   Flame,
@@ -26,12 +26,11 @@ const NAV_ITEMS = [
   { to: '/weekly-planner', label: 'Weekly Planner', icon: CalendarRange },
   { to: '/syllabus', label: 'Syllabus', icon: BookOpen },
   { to: '/mock-tests', label: 'Mock Tests', icon: FileSpreadsheet },
-  { to: '/analytics', label: 'Analysis', icon: BarChart2 },
+  { to: '/revisions', label: 'Flashcards', icon: RefreshCw },
+  { to: '/analytics', label: 'Progress & Analytics', icon: BarChart2 },
+  { to: '/achievements', label: 'Achievements', icon: Trophy },
   { to: '/journal', label: 'Notes & Resources', icon: FileText },
   { to: '/mentor', label: 'AI Mentor', icon: Sparkles },
-  { to: '/progress', label: 'Progress', icon: TrendingUp },
-  { to: '/calendar', label: 'Calendar', icon: CalendarDays },
-  { to: '/achievements', label: 'Achievements', icon: Award },
   { to: '/settings', label: 'Settings', icon: Settings },
 ]
 
@@ -60,36 +59,41 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           collapsed ? 'justify-center' : 'justify-between'
         )}
       >
-        {!collapsed ? (
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 shadow-sm shadow-blue-500/20">
-              <GraduationCap className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <span className="font-bold text-base text-white tracking-tight leading-none block">
-                PrepMate
-              </span>
-              <span className="text-[10px] text-slate-400 font-medium tracking-wide">
-                Plan • Study • Grow
-              </span>
-            </div>
-          </div>
+        {collapsed ? (
+          <button
+            onClick={onToggle}
+            aria-label="Expand sidebar"
+            title="Expand sidebar"
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-500 transition-all shadow-sm group"
+          >
+            <ChevronRight className="h-5 w-5 text-white" />
+          </button>
         ) : (
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600">
-            <GraduationCap className="h-5 w-5 text-white" />
-          </div>
-        )}
+          <>
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 shadow-sm shadow-blue-500/20">
+                <GraduationCap className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <span className="font-bold text-base text-white tracking-tight leading-none block">
+                  PrepMate
+                </span>
+                <span className="text-[10px] text-slate-400 font-medium tracking-wide">
+                  Plan • Study • Grow
+                </span>
+              </div>
+            </div>
 
-        <button
-          onClick={onToggle}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className={cn(
-            'rounded-lg p-1.5 text-slate-400 hover:text-white hover:bg-white/10 transition-colors',
-            collapsed && 'hidden'
-          )}
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </button>
+            <button
+              onClick={onToggle}
+              aria-label="Collapse sidebar"
+              title="Collapse sidebar"
+              className="rounded-lg p-1.5 text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+          </>
+        )}
       </div>
 
       {/* Navigation Links */}

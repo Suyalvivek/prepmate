@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ChevronDown, CheckCircle2, Target, TrendingUp } from 'lucide-react'
+import { useAuth } from '@/app/providers/AuthProvider'
 import { cn } from '@/lib/utils'
 
 interface DayData {
@@ -8,7 +9,7 @@ interface DayData {
   remaining: number
 }
 
-const WEEK_DATA: DayData[] = [
+const DEMO_WEEK_DATA: DayData[] = [
   { day: 'Mon', completed: 4.0, remaining: 1.0 },
   { day: 'Tue', completed: 5.0, remaining: 0.0 },
   { day: 'Wed', completed: 3.0, remaining: 2.0 },
@@ -18,9 +19,26 @@ const WEEK_DATA: DayData[] = [
   { day: 'Sun', completed: 0.0, remaining: 5.0 },
 ]
 
+const FRESH_WEEK_DATA: DayData[] = [
+  { day: 'Mon', completed: 0.0, remaining: 8.0 },
+  { day: 'Tue', completed: 0.0, remaining: 8.0 },
+  { day: 'Wed', completed: 0.0, remaining: 8.0 },
+  { day: 'Thu', completed: 0.0, remaining: 8.0 },
+  { day: 'Fri', completed: 0.0, remaining: 8.0 },
+  { day: 'Sat', completed: 0.0, remaining: 0.0 },
+  { day: 'Sun', completed: 0.0, remaining: 0.0 },
+]
+
 export function WeeklyProgressCard() {
+  const { user } = useAuth()
+  const isDemo = user?.email === 'aman@prepmate.app' || user?.uid === 'demo-aman-101'
   const [activeDay, setActiveDay] = useState<string | null>(null)
-  const maxHeightHours = 6.0 // Max scale in hours
+
+  const weekData = isDemo ? DEMO_WEEK_DATA : FRESH_WEEK_DATA
+  const maxHeightHours = isDemo ? 6.0 : 8.0
+  const completedTotal = isDemo ? 22 : 0
+  const targetTotal = isDemo ? 30 : 40
+  const progressPct = targetTotal > 0 ? Math.round((completedTotal / targetTotal) * 100) : 0
 
   return (
     <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800/80 bg-card p-5 md:p-6 shadow-sm h-full flex flex-col justify-between">
@@ -44,19 +62,19 @@ export function WeeklyProgressCard() {
 
         {/* Bar Chart Area */}
         <div className="mt-5 relative pt-4 pb-2">
-          {/* Target Reference Line (at 5h out of 6h = 83.3%) */}
+          {/* Target Reference Line */}
           <div
             className="absolute left-8 right-2 border-b border-dashed border-emerald-400 dark:border-emerald-500/80 z-10 pointer-events-none"
-            style={{ bottom: '58px' }}
+            style={{ bottom: isDemo ? '58px' : '40px' }}
           >
             <span className="absolute -top-3.5 right-0 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-card px-1 rounded">
-              -- Target (5h)
+              -- Target ({isDemo ? '5h' : '8h'})
             </span>
           </div>
 
           {/* Chart Columns */}
           <div className="flex items-end justify-between gap-2 h-36 pl-8 pr-2">
-            {WEEK_DATA.map((item) => {
+            {weekData.map((item) => {
               const completedHeightPct = (item.completed / maxHeightHours) * 100
               const remainingHeightPct = (item.remaining / maxHeightHours) * 100
               const isHovered = activeDay === item.day
@@ -106,7 +124,7 @@ export function WeeklyProgressCard() {
           </div>
 
           {/* Chart Legend */}
-          <div className="flex items-center justify-center gap-4 mt-3 text-[11px] text-slate-500 dark:text-slate-400">
+          <div className="flex items-center justify-center gap-5 mt-4 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500" />
               <span>Completed</span>
@@ -126,7 +144,9 @@ export function WeeklyProgressCard() {
             <CheckCircle2 className="h-3.5 w-3.5" />
           </div>
           <div>
-            <p className="text-[12px] font-bold text-slate-900 dark:text-white leading-none">22h</p>
+            <p className="text-[12px] font-bold text-slate-900 dark:text-white leading-none">
+              {completedTotal}h
+            </p>
             <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Completed</p>
           </div>
         </div>
@@ -136,7 +156,9 @@ export function WeeklyProgressCard() {
             <Target className="h-3.5 w-3.5" />
           </div>
           <div>
-            <p className="text-[12px] font-bold text-slate-900 dark:text-white leading-none">30h</p>
+            <p className="text-[12px] font-bold text-slate-900 dark:text-white leading-none">
+              {targetTotal}h
+            </p>
             <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Target</p>
           </div>
         </div>
@@ -146,7 +168,9 @@ export function WeeklyProgressCard() {
             <TrendingUp className="h-3.5 w-3.5" />
           </div>
           <div>
-            <p className="text-[12px] font-bold text-slate-900 dark:text-white leading-none">73%</p>
+            <p className="text-[12px] font-bold text-slate-900 dark:text-white leading-none">
+              {progressPct}%
+            </p>
             <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Progress</p>
           </div>
         </div>

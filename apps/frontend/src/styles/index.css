@@ -161,6 +161,15 @@
     @apply rounded-lg border border-border bg-card text-card-foreground shadow-sm;
   }
 
+  /* PrepMate buttons */
+  .pm-btn-primary {
+    @apply inline-flex items-center justify-center font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98] transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .pm-btn-secondary {
+    @apply inline-flex items-center justify-center font-medium rounded-lg border border-border bg-card hover:bg-muted text-foreground active:scale-[0.98] transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+  }
+
   /* Sidebar nav item */
   .nav-item {
     @apply flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors

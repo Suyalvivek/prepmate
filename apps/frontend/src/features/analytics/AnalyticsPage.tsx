@@ -1,9 +1,26 @@
 import { useState } from 'react'
-import { BarChart3, Trophy, Flame, Zap, Award, Target, TrendingUp, Calendar } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/app/providers/AuthProvider'
+import {
+  BarChart3,
+  Trophy,
+  Flame,
+  Zap,
+  Award,
+  Target,
+  TrendingUp,
+  Calendar,
+  ArrowRight,
+  CheckCircle2,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export function AnalyticsPage() {
-  const weekData = [
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const isDemo = user?.email === 'aman@prepmate.app' || user?.uid === 'demo-aman-101'
+
+  const demoWeekData = [
     { day: 'Mon', hours: 5.5, target: 6.0 },
     { day: 'Tue', hours: 6.0, target: 6.0 },
     { day: 'Wed', hours: 4.5, target: 6.0 },
@@ -13,14 +30,31 @@ export function AnalyticsPage() {
     { day: 'Sun', hours: 3.0, target: 6.0, restDay: true },
   ]
 
-  const subjects = [
-    { name: 'Quantitative Aptitude', hours: 14.5, percent: 38, color: 'bg-blue-500' },
-    { name: 'Reasoning & Intelligence', hours: 9.0, percent: 24, color: 'bg-emerald-500' },
-    { name: 'English Language', hours: 8.0, percent: 21, color: 'bg-amber-500' },
-    { name: 'General Awareness', hours: 6.0, percent: 17, color: 'bg-purple-500' },
+  const freshWeekData = [
+    { day: 'Mon', hours: 0.0, target: 8.0 },
+    { day: 'Tue', hours: 0.0, target: 8.0 },
+    { day: 'Wed', hours: 0.0, target: 8.0 },
+    { day: 'Thu', hours: 0.0, target: 8.0 },
+    { day: 'Fri', hours: 0.0, target: 8.0 },
+    { day: 'Sat', hours: 0.0, target: 0.0, restDay: true },
+    { day: 'Sun', hours: 0.0, target: 0.0, restDay: true },
   ]
 
-  const achievements = [
+  const demoSubjects = [
+    { name: 'Quantitative Aptitude', hours: 14.5, percent: 38, color: 'bg-blue-500', accuracy: '84%' },
+    { name: 'Reasoning & Intelligence', hours: 9.0, percent: 24, color: 'bg-emerald-500', accuracy: '88%' },
+    { name: 'English Language', hours: 8.0, percent: 21, color: 'bg-amber-500', accuracy: '80%' },
+    { name: 'General Awareness', hours: 6.0, percent: 17, color: 'bg-purple-500', accuracy: '72%' },
+  ]
+
+  const freshSubjects = [
+    { name: 'Quantitative Aptitude', hours: 0.0, percent: 0, color: 'bg-blue-500', accuracy: '0%' },
+    { name: 'Reasoning & Intelligence', hours: 0.0, percent: 0, color: 'bg-emerald-500', accuracy: '0%' },
+    { name: 'English Language', hours: 0.0, percent: 0, color: 'bg-amber-500', accuracy: '0%' },
+    { name: 'General Awareness', hours: 0.0, percent: 0, color: 'bg-purple-500', accuracy: '0%' },
+  ]
+
+  const demoAchievements = [
     { code: '7_streak', title: '7-Day Streak', desc: 'Studied consistently for a full week without breaking momentum.', unlocked: true },
     { code: 'first_mock', title: 'Test Taker', desc: 'Completed your first full-length diagnostic mock test.', unlocked: true },
     { code: 'revision_habit', title: 'Revision Habit', desc: 'Mastered 10 items in the spaced repetition queue.', unlocked: true },
@@ -28,6 +62,27 @@ export function AnalyticsPage() {
     { code: 'deep_diver', title: 'Deep Work Master', desc: 'Logged 4+ continuous hours in the Focus Timer.', unlocked: false },
     { code: 'century', title: 'Century Club', desc: 'Solve 100 high-yield questions in a single weekend.', unlocked: false },
   ]
+
+  const freshAchievements = [
+    { code: '7_streak', title: '7-Day Streak', desc: 'Studied consistently for a full week without breaking momentum.', unlocked: false },
+    { code: 'first_mock', title: 'Test Taker', desc: 'Completed your first full-length diagnostic mock test.', unlocked: false },
+    { code: 'revision_habit', title: 'Revision Habit', desc: 'Mastered 10 items in the spaced repetition queue.', unlocked: false },
+    { code: 'rest_day', title: 'Planned Recovery', desc: 'Utilized planned rest days cleanly without guilt.', unlocked: false },
+    { code: 'deep_diver', title: 'Deep Work Master', desc: 'Logged 4+ continuous hours in the Focus Timer.', unlocked: false },
+    { code: 'century', title: 'Century Club', desc: 'Solve 100 high-yield questions in a single weekend.', unlocked: false },
+  ]
+
+  const weekData = isDemo ? demoWeekData : freshWeekData
+  const subjects = isDemo ? demoSubjects : freshSubjects
+  const achievements = isDemo ? demoAchievements : freshAchievements
+  const weeklyHours = isDemo ? '37.5h' : '0.0h'
+  const weeklyTarget = isDemo ? '93% of 40h target' : '0% of 40h target'
+  const activeStreak = isDemo ? '7 Days' : '0 Days'
+  const longestStreak = isDemo ? 'Longest: 14 days' : 'Start your streak today'
+  const prepLevel = isDemo ? 'Level 4' : 'Level 1'
+  const levelXp = isDemo ? '1,280 / 1,500 XP to Lvl 5' : '0 / 200 XP to Lvl 2'
+  const taskVelocity = isDemo ? '88.2%' : '0.0%'
+  const velocitySubtitle = isDemo ? 'Completion reliability' : 'Complete your first task'
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -49,8 +104,8 @@ export function AnalyticsPage() {
             <span className="text-xs font-medium">Weekly Study Hours</span>
             <TrendingUp className="h-4 w-4 text-primary" />
           </div>
-          <p className="text-2xl font-bold text-foreground mt-2">37.5h</p>
-          <span className="text-[11px] text-emerald-500 font-medium">93% of 40h target</span>
+          <p className="text-2xl font-bold text-foreground mt-2">{weeklyHours}</p>
+          <span className="text-[11px] text-emerald-500 font-medium">{weeklyTarget}</span>
         </div>
 
         <div className="pm-card p-4">
@@ -58,8 +113,8 @@ export function AnalyticsPage() {
             <span className="text-xs font-medium">Active Streak</span>
             <Flame className="h-4 w-4 text-orange-500" />
           </div>
-          <p className="text-2xl font-bold text-orange-500 mt-2">7 Days</p>
-          <span className="text-[11px] text-muted-foreground">Longest: 14 days</span>
+          <p className="text-2xl font-bold text-orange-500 mt-2">{activeStreak}</p>
+          <span className="text-[11px] text-muted-foreground">{longestStreak}</span>
         </div>
 
         <div className="pm-card p-4">
@@ -67,8 +122,8 @@ export function AnalyticsPage() {
             <span className="text-xs font-medium">Prep Level</span>
             <Zap className="h-4 w-4 text-amber-500" />
           </div>
-          <p className="text-2xl font-bold text-foreground mt-2">Level 4</p>
-          <span className="text-[11px] text-primary font-medium">1,280 / 1,500 XP to Lvl 5</span>
+          <p className="text-2xl font-bold text-foreground mt-2">{prepLevel}</p>
+          <span className="text-[11px] text-primary font-medium">{levelXp}</span>
         </div>
 
         <div className="pm-card p-4">
@@ -76,8 +131,8 @@ export function AnalyticsPage() {
             <span className="text-xs font-medium">Task Velocity</span>
             <Target className="h-4 w-4 text-emerald-500" />
           </div>
-          <p className="text-2xl font-bold text-emerald-500 mt-2">88.2%</p>
-          <span className="text-[11px] text-muted-foreground">Completion reliability</span>
+          <p className="text-2xl font-bold text-emerald-500 mt-2">{taskVelocity}</p>
+          <span className="text-[11px] text-muted-foreground">{velocitySubtitle}</span>
         </div>
       </div>
 
@@ -90,57 +145,100 @@ export function AnalyticsPage() {
               <h3 className="text-sm font-semibold text-foreground">Weekly Study Distribution</h3>
               <p className="text-xs text-muted-foreground mt-0.5">Hours logged vs daily goal</p>
             </div>
-            <span className="text-xs font-bold text-primary">This Week</span>
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+              This Week
+            </span>
           </div>
 
-          <div className="grid grid-cols-7 gap-3 items-end h-48 pt-6 pb-2 border-b border-border">
-            {weekData.map((d) => {
-              const heightPercent = Math.min((d.hours / 8) * 100, 100)
-              return (
-                <div key={d.day} className="flex flex-col items-center h-full justify-end group">
-                  <span className="text-[10px] font-bold text-foreground opacity-0 group-hover:opacity-100 transition-opacity mb-1">
-                    {d.hours}h
+          {/* Chart Area */}
+          <div className="pt-2">
+            {/* Bars Column Grid */}
+            <div className="grid grid-cols-7 gap-2 sm:gap-3 items-end h-36 px-1">
+              {weekData.map((d) => {
+                const heightPercent = d.hours > 0 ? Math.min((d.hours / 8) * 100, 100) : 0
+                const reachedGoal = d.hours >= d.target
+
+                return (
+                  <div key={d.day} className="flex flex-col items-center h-full justify-end group relative">
+                    {/* Tooltip on Hover */}
+                    <div className="absolute -top-7 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2 py-0.5 rounded bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-[10px] font-semibold shadow-md whitespace-nowrap">
+                      {d.hours > 0 ? `${d.hours}h logged` : d.restDay ? 'Rest Day' : '0.0h logged'}
+                    </div>
+
+                    {/* Pillar Bar Track */}
+                    <div className="w-full max-w-[34px] bg-secondary/50 hover:bg-secondary/70 rounded-t-lg h-32 flex items-end overflow-hidden border border-border/30 transition-colors">
+                      {d.hours > 0 && (
+                        <div
+                          style={{ height: `${heightPercent}%` }}
+                          className={cn(
+                            'w-full transition-all duration-300 rounded-t-md',
+                            d.restDay
+                              ? 'bg-slate-400 dark:bg-slate-600'
+                              : reachedGoal
+                              ? 'bg-primary'
+                              : 'bg-primary/70'
+                          )}
+                        />
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Day Labels Row (Completely decoupled from bar height) */}
+            <div className="grid grid-cols-7 gap-2 sm:gap-3 px-1 pt-2.5 mt-1 border-t border-border">
+              {weekData.map((d) => (
+                <div key={d.day} className="text-center">
+                  <span className="text-xs font-medium text-muted-foreground block truncate">
+                    {d.day}
                   </span>
-                  <div
-                    className={cn(
-                      'w-full max-w-[36px] rounded-t-lg transition-all duration-500',
-                      d.restDay
-                        ? 'bg-muted-foreground/30'
-                        : d.hours >= d.target
-                        ? 'bg-primary'
-                        : 'bg-primary/60'
-                    )}
-                    style={{ height: `${heightPercent}%` }}
-                  />
-                  <span className="text-xs font-medium text-muted-foreground mt-2">{d.day}</span>
                 </div>
-              )
-            })}
+              ))}
+            </div>
           </div>
-          <div className="flex items-center justify-between text-xs text-muted-foreground mt-3 pt-1">
-            <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded bg-primary" /> Goal Reached
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded bg-muted-foreground/30" /> Planned Rest Day
-            </span>
+
+          {/* Legend and Guidance Row */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-4 mt-2 border-t border-border/50 text-xs text-muted-foreground">
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-primary" />
+                <span className="font-medium text-foreground">Goal Reached</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-slate-400 dark:bg-slate-600" />
+                <span>Planned Rest Day</span>
+              </div>
+            </div>
+            {!isDemo && (
+              <span className="text-[11px] text-blue-500 font-medium">
+                Log study hours in Focus Timer to populate
+              </span>
+            )}
           </div>
         </div>
 
         {/* Subject Allocation */}
         <div className="pm-card p-5">
-          <h3 className="text-sm font-semibold text-foreground">Subject Time Allocation</h3>
-          <p className="text-xs text-muted-foreground mt-0.5 mb-4">Current week distribution</p>
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold text-foreground">Subject Time Allocation</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Current week distribution</p>
+          </div>
 
-          <div className="space-y-3.5">
-            {subjects.map((sub) => (
-              <div key={sub.name} className="space-y-1.5">
-                <div className="flex justify-between text-xs font-medium">
-                  <span className="text-foreground">{sub.name}</span>
-                  <span className="text-muted-foreground">{sub.hours}h ({sub.percent}%)</span>
+          <div className="space-y-4">
+            {subjects.map((s) => (
+              <div key={s.name} className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-medium text-foreground truncate max-w-[180px]">{s.name}</span>
+                  <span className="text-muted-foreground font-semibold">
+                    {s.hours}h ({s.percent}%)
+                  </span>
                 </div>
-                <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
-                  <div className={cn('h-full rounded-full', sub.color)} style={{ width: `${sub.percent}%` }} />
+                <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                  <div
+                    style={{ width: `${s.percent}%` }}
+                    className={cn('h-full rounded-full transition-all duration-500', s.color)}
+                  />
                 </div>
               </div>
             ))}
@@ -148,47 +246,65 @@ export function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Gamification Badges */}
-      <div className="pm-card p-6">
+      {/* Gamified Achievements Showcase */}
+      <div className="pm-card p-5">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-amber-500" />
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Trophy className="h-4 w-4 text-amber-500" />
               Achievements & Milestones
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
               Earn badges and gain XP as you complete daily goals and overcome difficult topics.
             </p>
           </div>
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-500">
-            {achievements.filter((a) => a.unlocked).length} / {achievements.length} Unlocked
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
+              {achievements.filter((a) => a.unlocked).length} / {achievements.length} Unlocked
+            </span>
+            <button
+              onClick={() => navigate('/achievements')}
+              className="text-xs font-semibold text-blue-500 hover:text-blue-600 flex items-center gap-1"
+            >
+              <span>View All 11 Badges & XP</span>
+              <ArrowRight className="h-3 w-3" />
+            </button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {achievements.map((ach) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {achievements.map((item) => (
             <div
-              key={ach.code}
+              key={item.code}
               className={cn(
-                'p-4 rounded-xl border transition-all flex items-start gap-3',
-                ach.unlocked
-                  ? 'bg-card border-border hover:border-primary/50'
-                  : 'bg-muted/30 border-dashed border-border opacity-60'
+                'p-3.5 rounded-xl border flex items-start gap-3 transition-colors',
+                item.unlocked
+                  ? 'border-amber-200/60 dark:border-amber-900/40 bg-amber-50/20 dark:bg-amber-950/10'
+                  : 'border-border/60 bg-card opacity-60'
               )}
             >
               <div
                 className={cn(
-                  'w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-base',
-                  ach.unlocked ? 'bg-amber-500/10 text-amber-500' : 'bg-muted text-muted-foreground'
+                  'h-8 w-8 rounded-lg flex items-center justify-center shrink-0 text-sm',
+                  item.unlocked
+                    ? 'bg-amber-100 dark:bg-amber-900/60 text-amber-600'
+                    : 'bg-secondary text-muted-foreground'
                 )}
               >
-                <Award className="h-5 w-5" />
+                <Award className="h-4 w-4" />
               </div>
-              <div>
-                <h4 className="text-xs font-bold text-foreground">{ach.title}</h4>
-                <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{ach.desc}</p>
-                <span className="text-[10px] font-bold mt-1.5 inline-block text-primary">
-                  {ach.unlocked ? '✓ Unlocked (+150 XP)' : 'Locked'}
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-foreground truncate">{item.title}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug line-clamp-2">
+                  {item.desc}
+                </p>
+                <span
+                  className={cn(
+                    'inline-flex items-center gap-1 text-[10px] font-semibold mt-1.5',
+                    item.unlocked ? 'text-blue-500' : 'text-slate-400'
+                  )}
+                >
+                  {item.unlocked ? '✓ Unlocked (+150 XP)' : 'Locked'}
                 </span>
               </div>
             </div>

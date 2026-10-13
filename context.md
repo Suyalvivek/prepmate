@@ -59,6 +59,58 @@
 - [x] Onboarding wizard — 3 steps, resolves exam codes, calls `/me/onboarding`
 - [x] Database migration applied & SSC seed data populated (`bun db:seed`)
 - [x] End-to-end auth test verified with live Firebase credentials
+- [x] **High-Fidelity Dashboard & Navigation UI**:
+  - Implemented exact visual dashboard matching reference design (Hero banner with mountain sunrise artwork, Journey streak card, 4 key metrics with SVG progress gauges)
+  - Interactive "Today's Plan" with 6 scheduled tasks, status badges, and interactive cycling
+  - "Weekly Progress" stacked bar chart with 5h target line & summary badges
+  - "Upcoming Exams" countdown tracker (SSC CGL, CPO, CHSL)
+  - "Monthly Calendar" with October 2024 active date selection and status indicators
+  - "AI Mentor" card with instant prompt chips and input action
+  - Bottom analytics: Subject Progress bars, Mock Test performance curve with score/accuracy tooltip, Topic-wise accuracy donut gauge, and 4 Recent Achievement badges
+  - Navy sidebar with complete navigation items, "Stay Consistent" card, and user footer profile
+  - Sleek top header with search pill, day/night theme toggle, notification bell, and user avatar menu
+  - Full Light & Dark theme support with instant switching and responsive desktop/tablet layouts
+- [x] **Study Planner (`/planner`) Full Functionality & UX**:
+  - Defined reusable `.pm-btn-primary` and `.pm-btn-secondary` in `index.css`.
+  - Date-aware 7-day strip (Sun 11 Oct – Sat 17 Oct) with active indicators and dynamic daily task filtering.
+  - Dynamic capacity stats (Daily Capacity, Tasks Progress, Focus Completed) updating per selected day.
+  - Interactive task actions: Completion toggle with XP toasts, Deferral to next day (moving seamlessly across days), Deletion.
+  - Interactive Focus Timer modal with countdown, pause/resume, reset, and direct completion.
+  - Modal to Add Task with title, subject, scheduled day selector, duration, priority, and type.
+  - Rich 7-Day Weekly Overview schedule board with daily hours, milestone events, and subject distribution analytics.
+  - Filter pills (All, Pending, Completed) and Subject pills (Quant, Reasoning, English, GA).
+  - **Historical Record Locking (Immutable Past Days)**:
+    - Days prior to today (`date < TODAY_DATE`) are strictly read-only and locked.
+    - Checkboxes are disabled with lock tooltips; action buttons (`Start Focus`, `Defer`, `Delete`) are replaced with a clear `Locked` badge.
+    - Prominent `Historical Record (Locked)` warning banner rendered with a quick `Switch to Today` button.
+    - Adding tasks to past days is blocked in both the modal selector (disabled options with `• Past (Locked)`) and the `handleAddTask` handler.
+    - Weekly Overview day cards display a `Past` header badge and `Locked` footer instead of `+ Add`.
+  - Verified across light and dark modes with 100% passing TypeScript and Vite production build.
+- [x] **Full Sidebar Navigation & Features End-to-End Verification**:
+  - `Dashboard` (`/app`): All cards, SVG gauges, Today's Plan, Weekly progress, and Exams operational.
+  - `My Plan` (`/planner`): Daily view with full task management, deferral, and focus timer.
+  - `Weekly Planner` (`/weekly-planner`): Automatically syncs and displays the 7-day Weekly Overview agenda board.
+  - `Syllabus` (`/syllabus`): Multi-exam switcher (CGL/CPO/CHSL), live topic search, subject filter pills, status selector (Not Started / In Progress / Mastered) with dynamic mastery progress updates.
+  - `Mock Tests` (`/mock-tests`): Score KPIs, test list, Error Notebook tab, "Add to Revision" conversion, and "Log Mock Test" modal.
+  - `Flashcards` (`/revisions`): Spaced repetition flashcard queue with recall interval ratings (Difficult, Good, Easy) and due counters.
+  - `Progress & Analytics` (`/analytics`): Quantified study analytics, weekly study distribution bar chart with daily goals, subject time allocation meters with section accuracy KPIs.
+  - `Achievements` (`/achievements`): Dedicated gamification page with Level 4 XP progress bar (1,280/1,500 XP), 7-Day Consistency Streak showcase, 11 categorized badges with live progress bars, filter tabs, and recent XP transaction log.
+  - `Notes & Resources` (`/journal`): Focus clock with presets (25m/50m/10m), reflection form with mood chips, and past reflection history log.
+  - `AI Mentor` (`/mentor`): Fully elevated AI Study Mentor feature:
+    - Real-time location state reader auto-submitting prompts clicked from Dashboard's `AIMentorCard`.
+    - World-class System Prompt architecture ([mentorPrompt.ts](file:///Users/viveksuyal/Downloads/PrepMate/apps/frontend/src/features/mentor/mentorPrompt.ts)) with explicit persona definition, greeting handling rules, candidate telemetry injection, and FRD FR-014 safety guardrails.
+    - Inspectable "System Prompt" modal allowing candidates to view, verify, and copy the prompt instructions governing their mentor.
+    - Intelligent, warm, and concise handling of greetings (`"hi"`, `"hello"`, `"hey"`): acknowledges streak & due flashcards without robotic filler or canned lectures.
+    - Direct support for BYOK Gemini API (`gemini-1.5-flash` / `gemini-1.5-pro`) with graceful fallback to deterministic local engine.
+    - Collapsible "Study Snapshot" grounding drawer showcasing candidate profile (SSC CGL 2026, 165+ target, 6.0h daily limit, 7-day streak, Mock #5 148.5/200 evidence, weak areas, and 3 due flashcards).
+    - Structured Actionable Study Mission cards with direct "Add to Plan" functionality that saves tasks to `localStorage` and synchronizes with the Planner.
+    - Categorized prompt chips (Recommended, Diagnostics, Adaptive Plan, High-Yield Drills).
+    - Rich Markdown Rendering & Anti-Clutter Formatting: Integrated `react-markdown` with customized Tailwind typography components (styled headings, lists, inline code, bold text) removing raw syntax artifacts (`**`, `###`), and updated system prompt rules to eliminate asterisk clutter and excessive bolding.
+    - Assistant message tools: Copy response, Thumbs up/down feedback, and contextual direct links to Error Notebook (`/mock-tests`) and Flashcards (`/revisions`).
+  - `TopBar Notifications Center`: Interactive notifications popover displaying time-sensitive study alerts (7-day streak at risk, due flashcards queue, mock test analysis summaries, exam timeline alerts), unread badge counts, mark-all-read functionality, and direct navigation links.
+  - `Dashboard Refinement`: Removed redundant `Recent Achievements` card from the bottom of the Dashboard; adjusted row to a spacious 3-column grid featuring `Subject Progress`, `Mock Test Performance`, and `Topic-wise Accuracy`.
+  - `Settings` (`/settings`): Profile information, daily study capacity slider, active study day toggles, theme switcher, BYOK Gemini credentials with localStorage persistence, and save confirmation.
+  - `Sidebar Collapse/Expand`: Smooth collapse to 72px icon mode with tooltips, and blue toggle button to expand back.
 
 ---
 

@@ -9,6 +9,7 @@ import { SyllabusPage } from '@/features/syllabus/SyllabusPage'
 import { MockTestsPage } from '@/features/mock-tests/MockTestsPage'
 import { RevisionsPage } from '@/features/revisions/RevisionsPage'
 import { AnalyticsPage } from '@/features/analytics/AnalyticsPage'
+import { AchievementsPage } from '@/features/achievements/AchievementsPage'
 import { JournalPage } from '@/features/journal/JournalPage'
 import { MentorPage } from '@/features/mentor/MentorPage'
 import { SettingsPage } from '@/features/settings/SettingsPage'
@@ -40,9 +41,9 @@ const router = createBrowserRouter([
           { path: '/analytics', element: <AnalyticsPage /> },
           { path: '/journal', element: <JournalPage /> },
           { path: '/mentor', element: <MentorPage /> },
-          { path: '/progress', element: <AnalyticsPage /> },
+          { path: '/progress', element: <Navigate to="/analytics" replace /> },
           { path: '/calendar', element: <PlannerPage /> },
-          { path: '/achievements', element: <AnalyticsPage /> },
+          { path: '/achievements', element: <AchievementsPage /> },
           { path: '/settings', element: <SettingsPage /> },
           { path: '*', element: <Navigate to="/app" replace /> },
         ],

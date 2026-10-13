@@ -16,9 +16,20 @@ export function createApp() {
 
   // ── Security ──────────────────────────────────────────────────────────────
   app.use(helmet())
+  const allowedOrigins = env.CORS_ORIGINS.split(',').map((o) => o.trim())
   app.use(
     cors({
-      origin: env.CORS_ORIGINS.split(',').map((o) => o.trim()),
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true)
+        if (allowedOrigins.includes(origin)) return callback(null, true)
+        if (
+          env.NODE_ENV === 'development' &&
+          /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
+        ) {
+          return callback(null, true)
+        }
+        callback(new Error(`Origin ${origin} not allowed by CORS`))
+      },
       credentials: true,
     })
   )

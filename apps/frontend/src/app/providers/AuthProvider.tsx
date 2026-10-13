@@ -13,6 +13,7 @@ interface AuthState {
   refreshProfile: () => Promise<void>
   signInWithGoogle: () => Promise<void>
   signOutUser: () => Promise<void>
+  enterDemoMode: () => void
   error: string | null
 }
 
@@ -25,25 +26,50 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [onboardingCompleted, setOnboardingCompleted] = useState(false)
+  const [onboardingCompleted, setOnboardingCompletedState] = useState<boolean>(() => {
+    return localStorage.getItem('prepmate_onboarding_completed') === 'true'
+  })
   const [error, setError] = useState<string | null>(null)
+
+  const setOnboardingCompleted = (completed: boolean, uid?: string) => {
+    setOnboardingCompletedState(completed)
+    const targetUid = uid || user?.uid
+    if (completed) {
+      localStorage.setItem('prepmate_onboarding_completed', 'true')
+      if (targetUid) {
+        localStorage.setItem(`prepmate_onboarding_${targetUid}`, 'true')
+      }
+    } else {
+      localStorage.removeItem('prepmate_onboarding_completed')
+    }
+  }
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser)
-
       if (firebaseUser) {
+        // Immediate cache check to avoid flash of onboarding
+        const userCached =
+          localStorage.getItem(`prepmate_onboarding_${firebaseUser.uid}`) === 'true' ||
+          localStorage.getItem('prepmate_onboarding_completed') === 'true'
+        if (userCached) {
+          setOnboardingCompletedState(true)
+        }
+
+        setUser(firebaseUser)
+
         try {
           // Bootstrap: create/update local profile and check onboarding status
           const profile = await apiClient.get<{ onboardingCompleted: boolean }>('/me')
-          setOnboardingCompleted(profile.onboardingCompleted)
+          setOnboardingCompleted(profile.onboardingCompleted, firebaseUser.uid)
         } catch {
-          // Profile fetch failing shouldn't block the auth state from resolving
-          setOnboardingCompleted(false)
+          if (userCached) {
+            setOnboardingCompletedState(true)
+          }
         }
       } else {
-        setOnboardingCompleted(false)
-        // Clear all cached user data on sign-out
+        setUser(null)
+        setOnboardingCompletedState(false)
+        localStorage.removeItem('prepmate_onboarding_completed')
         queryClient.clear()
       }
 
@@ -55,10 +81,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signInWithGoogle = async () => {
     setError(null)
+    setIsLoading(true)
     try {
-      await signInWithPopup(auth, googleProvider)
-      // onAuthStateChanged will handle the rest
+      const result = await signInWithPopup(auth, googleProvider)
+      if (result.user) {
+        try {
+          const profile = await apiClient.get<{ onboardingCompleted: boolean }>('/me')
+          setOnboardingCompleted(profile.onboardingCompleted, result.user.uid)
+        } catch {
+          // Handled in onAuthStateChanged
+        }
+      }
     } catch (err: unknown) {
+      setIsLoading(false)
       const e = err as { code?: string }
       if (e.code !== 'auth/popup-closed-by-user') {
         setError('Sign-in failed. Please try again.')
@@ -69,14 +104,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const refreshProfile = async () => {
     try {
       const profile = await apiClient.get<{ onboardingCompleted: boolean }>('/me')
-      setOnboardingCompleted(profile.onboardingCompleted)
+      setOnboardingCompleted(profile.onboardingCompleted, user?.uid)
     } catch {
       // ignore
     }
   }
 
   const signOutUser = async () => {
-    await signOut(auth)
+    setUser(null)
+    setOnboardingCompletedState(false)
+    localStorage.removeItem('prepmate_onboarding_completed')
+    await signOut(auth).catch(() => {})
+  }
+
+  const enterDemoMode = () => {
+    setUser({
+      uid: 'demo-aman-101',
+      displayName: 'Aman',
+      email: 'aman@prepmate.app',
+      photoURL: '/assets/aman-avatar.jpg',
+    } as unknown as User)
+    setOnboardingCompleted(true)
+    setIsLoading(false)
   }
 
   return (
@@ -90,6 +139,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         refreshProfile,
         signInWithGoogle,
         signOutUser,
+        enterDemoMode,
         error,
       }}
     >

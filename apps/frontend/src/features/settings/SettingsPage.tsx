@@ -11,7 +11,13 @@ export function SettingsPage() {
   const [displayName, setDisplayName] = useState(user?.displayName || 'Vivek')
   const [dailyHours, setDailyHours] = useState(6)
   const [selectedDays, setSelectedDays] = useState([1, 2, 3, 4, 5, 6])
-  const [apiKey, setApiKey] = useState('')
+  const [apiKey, setApiKey] = useState(() => {
+    try {
+      return localStorage.getItem('prepmate_gemini_api_key') || ''
+    } catch {
+      return ''
+    }
+  })
   const [showKey, setShowKey] = useState(false)
   const [savedSuccess, setSavedSuccess] = useState(false)
 
@@ -25,6 +31,15 @@ export function SettingsPage() {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault()
+    try {
+      if (apiKey.trim()) {
+        localStorage.setItem('prepmate_gemini_api_key', apiKey.trim())
+      } else {
+        localStorage.removeItem('prepmate_gemini_api_key')
+      }
+    } catch {
+      // ignore
+    }
     setSavedSuccess(true)
     setTimeout(() => setSavedSuccess(false), 3000)
   }
